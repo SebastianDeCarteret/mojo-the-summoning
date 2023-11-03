@@ -1,4 +1,4 @@
-const { db } = require("../config");
+const { db } = require("../db/config");
 const { DataTypes, Model } = require("sequelize");
 
 class Card extends Model {}

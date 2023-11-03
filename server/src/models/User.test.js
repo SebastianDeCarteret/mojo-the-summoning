@@ -1,26 +1,44 @@
-const { describe, it, expect, beforeAll, afterAll } = require('@jest/globals')
-const { User } = require('.')
-const db = require('../db/config')
+const { db } = require("../db/config");
+const { User } = require("./index");
 
-// define in global scope
-let user
+describe("User model tests:", () => {
+  afterAll(async () => {
+    await db.sync({ force: true });
+  });
 
-// clear db and create new user before tests
-beforeAll(async () => {
-  await db.sync({ force: true })
-  user = await User.create({ username: 'gandalf' })
-})
+  beforeEach(async () => {
+    await db.sync({ force: true });
+  });
 
-// clear db after tests
-afterAll(async () => await db.sync({ force: true }))
+  it("can create a User entry", async () => {
+    const response = await User.create({ username: "seb" });
+    const user = await User.findByPk(1);
+    expect(user.username).toBe(response.username);
+  });
 
-describe('User', () => {
-  it('has an id', async () => {
-    expect(user).toHaveProperty('id')
-  })
+  it("can update a User entry", async () => {
+    const response = await User.create({ username: "seb" });
+    const user = await User.findByPk(1);
+    expect(user.username).toBe(response.username);
+    await response.update({ username: "bes" });
+    const userUpdated = await User.findByPk(1);
+    expect(userUpdated.username).toBe(response.username);
+  });
 
-  /**
-   * Create more tests
-   * E.g. check that the username of the created user is actually gandalf
-   */
-})
+  it("can delete a User entry", async () => {
+    const response = await User.create({ username: "seb" });
+    await response.destroy();
+    expect(await User.findAll()).toEqual([]);
+  });
+
+  it("User is associated correctly with Deck", async () => {
+    const user = await User.create({ username: "seb" });
+    const deck = await user.createDeck({
+      name: "deck",
+      xp: 100,
+    });
+    const userFound = await User.findByPk(1);
+    const userDeck = await userFound.getDeck();
+    expect(deck.name).toBe(userDeck.name);
+  });
+});

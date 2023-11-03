@@ -1,7 +1,11 @@
-const { db } = require("../config");
-const { Card } = require("../../index");
+const { db } = require("../db/config");
+const { Card } = require("./index");
 
 describe("Card model tests:", () => {
+  afterAll(async () => {
+    await db.sync({ force: true });
+  });
+
   beforeEach(async () => {
     await db.sync({ force: true });
   });
